@@ -1,4 +1,4 @@
-declare verbose IntegralPointsConic, 1;
+declare verbose IntPtsConic, 1;
 
 function MinimalSolutionSet(solutions, a, z, tau)
     // exclude solutions under tau multiplication
@@ -33,7 +33,7 @@ intrinsic IntegralPointsConic(abc::SeqEnum, values::SeqEnum) -> Assoc
 { given [a,b,c], returns the solutions to a x^2 + b x y + c y^2 in values, with x, y \in \Z
 up to the action of the fundamental unit of the order associated to the conic
 }
-    vprintf IntegralPointsConic: "IntegralPointsConic(%o, %o)\n", abc, values;
+    vprintf IntPtsConic: "IntegralPointsConic(%o, %o)\n", abc, values;
     // standardize conic, GCD(a,b,c) = 1 and a > 0
     g := GCD(abc);
     a, b, c := Explode(abc);
@@ -110,7 +110,7 @@ up to the action of the fundamental unit of the order associated to the conic
     //fn := func<tup | a*tup[1]^2 + b*tup[1]*tup[2] + c*tup[2]^2>;
     //solutions := [tup : tup in rectangle | fn(tup) in values_set and Abs(a*x + phi0*y) le bound and Abs(a*x + phi1*y) le bound where x,y := Explode(tup)];
 
-    vtime IntegralPointsConic:
+    vtime IntPtsConic:
     solutions1 := &cat [
             [ elt : elt in [[x, y, Evaluate(f_givenx, y)] : y in ybox | Abs(ax + phi0*y) le bound and Abs(ax + phi1*y) le bound ] | elt[3] in values_set]
             where ax := a*x where f_givenx := Polynomial([a*x^2,b*x,c])
@@ -119,7 +119,7 @@ up to the action of the fundamental unit of the order associated to the conic
 
     // Abs(a*x + phi*y) <= B <=> a*x + phi*y < B and a*x + phi*y > -B <=> (because a > 0) x < (B - phi*y)/a and x > -(B + phi*y)/a
     xbox_giveny := func<y | [Ceiling(Max(-(bound + phi0*y)/a, -(bound + phi1*y)/a)) .. Floor(Min((bound-phi0*y)/a, (bound-phi1*y)/a))]>;
-    vtime IntegralPointsConic:
+    vtime IntPtsConic:
     solutions := &cat [
         [ elt : elt in [[x, y, Evaluate(f_giveny, x)] : x in xbox_giveny(y)] | elt[3] in values_set]
         where f_giveny := Polynomial([c*y^2,b*y,a])

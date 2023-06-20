@@ -29,10 +29,9 @@ function MinimalSolutionSet(solutions, a, z, tau)
     return {@ [Integers() | x,y] where x,y := Explode(tup) : i->tup in solutions | i notin excluded @};
 end function;
 
-intrinsic IntegralPointsConic(abc::SeqEnum, values::SeqEnum) -> Assoc, RngOrdElt
-{ given [a,b,c], returns the solutions to a x^2 + b x y + c y^2 in values, with x, y \in \Z
-up to the action of -1 and the (square of the) fundamental unit (if the norm is -1), of the order associated to the conic.
-The second return value is (square of the) fundamental unit (if the norm is -1).
+intrinsic IntegralPointsConic(abc::SeqEnum, values::SeqEnum) -> Assoc
+{ given [a,b,c], returns the solutions to a x^2 + b x y + c y^2 in values, with x, y integral
+up to the action of -1 and the tau, where tau is the (square of the) fundamental unit (if the norm is -1) of the order associated to the conic.
 }
     vprintf IntPtsConic: "IntegralPointsConic(%o, %o)\n", abc, values;
     // standardize conic, GCD(a,b,c) = 1 and a > 0
@@ -43,7 +42,7 @@ The second return value is (square of the) fundamental unit (if the norm is -1).
     if den ne 1 then
         newabc := [elt div den : elt in abc];
         newvalues := Sort(SetToSequence({ d div den : d in values | d mod g eq 0 }));
-        newres, tau := $$(newabc, newvalues);
+        newres := $$(newabc, newvalues);
         res := AssociativeArray();
         for d in values do
             if d mod g eq 0 then
@@ -52,7 +51,7 @@ The second return value is (square of the) fundamental unit (if the norm is -1).
                 res[d] := {@ @};
             end if;
         end for;
-        return res, tau;
+        return res;
     end if;
 
 
@@ -64,6 +63,8 @@ The second return value is (square of the) fundamental unit (if the norm is -1).
     assert a gt 0;
 
 
+
+
     D := b^2 - 4*a*c;
 
     require D gt 0 and not IsSquare(D): "only support indefinite conics at the moment";
@@ -71,6 +72,7 @@ The second return value is (square of the) fundamental unit (if the norm is -1).
     I := Ideal(BinaryQuadraticForms(D)![a,b,c]);
     O := Order(I);
     OF := Integers(NumberField(O));
+    // if a == 1 we could call NormEquation
 
     tau := FundamentalUnit(O);
     if Norm(tau) eq -1 then
@@ -84,10 +86,11 @@ The second return value is (square of the) fundamental unit (if the norm is -1).
     assert tau0 gt 0 and tau1 gt 0;
 
     // (a*x + z*y)*(a*x + sigma(z)*y) = a f(x, y)
+    // z = (b + Sqrt(b^2 - 4 a c))/2
     z := -O!Roots(PolynomialRing(OF)![a*c, b, 1])[1][1]; //  we need to work over a maximal order for Factorisation
 
 
-    bound :=  Max(tau0, tau1);
+    bound := Max(tau0, tau1);
 
     dmax := Max(Abs(Max(values)), Abs(Min(values)));
     bound *:= Abs(Parent(bound)!dmax*a);
@@ -146,7 +149,17 @@ The second return value is (square of the) fundamental unit (if the norm is -1).
         res[d] := MinimalSolutionSet(res[d], a, z, tau);
     end for;
 
-    return res, tau;
+    /*
+    // write tau  = u + v*z
+    etau := Eltseq(tau);
+    ez := Eltseq(z);
+    assert etau[2] mod ez[2] eq 0;
+    v := etau[2] div ez[2];
+    u := Integers()!(tau - v*z);
+    assert tau eq u + v*z;
+    */
+
+    return res;
 end intrinsic;
 
 

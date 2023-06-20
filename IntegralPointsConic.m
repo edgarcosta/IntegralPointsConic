@@ -29,9 +29,10 @@ function MinimalSolutionSet(solutions, a, z, tau)
     return {@ [Integers() | x,y] where x,y := Explode(tup) : i->tup in solutions | i notin excluded @};
 end function;
 
-intrinsic IntegralPointsConic(abc::SeqEnum, values::SeqEnum) -> Assoc
+intrinsic IntegralPointsConic(abc::SeqEnum, values::SeqEnum) -> Assoc, RngOrdElt
 { given [a,b,c], returns the solutions to a x^2 + b x y + c y^2 in values, with x, y \in \Z
-up to the action of the fundamental unit of the order associated to the conic
+up to the action of -1 and the (square of the) fundamental unit (if the norm is -1), of the order associated to the conic.
+The second return value is (square of the) fundamental unit (if the norm is -1).
 }
     vprintf IntPtsConic: "IntegralPointsConic(%o, %o)\n", abc, values;
     // standardize conic, GCD(a,b,c) = 1 and a > 0
@@ -42,7 +43,7 @@ up to the action of the fundamental unit of the order associated to the conic
     if den ne 1 then
         newabc := [elt div den : elt in abc];
         newvalues := Sort(SetToSequence({ d div den : d in values | d mod g eq 0 }));
-        newres := $$(newabc, newvalues);
+        newres, tau := $$(newabc, newvalues);
         res := AssociativeArray();
         for d in values do
             if d mod g eq 0 then
@@ -51,7 +52,7 @@ up to the action of the fundamental unit of the order associated to the conic
                 res[d] := {@ @};
             end if;
         end for;
-        return res;
+        return res, tau;
     end if;
 
 
@@ -145,7 +146,7 @@ up to the action of the fundamental unit of the order associated to the conic
         res[d] := MinimalSolutionSet(res[d], a, z, tau);
     end for;
 
-    return res;
+    return res, tau;
 end intrinsic;
 
 
